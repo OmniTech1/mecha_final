@@ -7,7 +7,7 @@ SoftwareSerial BTSerial(10, 11); // 소프트웨어 시리얼 핀 설정 (RX=10,
 
 // 소리 센서 핀 설정
 const int soundSensorPin = A0;
-const int soundThreshold = 40; // 데시벨 기준치
+const int soundThreshold = 30; // 데시벨 기준치
 unsigned long measurementStartTime = 0; // 측정 시작 시간
 bool measuring = false; // 측정 활성화 플래그
 
@@ -54,25 +54,26 @@ void loop() {
     measurementStartTime = millis(); // 측정 시작 시간 기록
     maxAx = 0.0; // 최대값 초기화
     maxAz = 0.0;
-    Serial.println("Sound detected! Measuring for 5 seconds...");
+    Serial.println("Sound detected! Measuring for 3 seconds...");
   }
 
   // 측정 활성화 상태일 때
   if (measuring) {
     int16_t ax, ay, az;
     mpu.getAcceleration(&ax, &ay, &az);
+    String data = String(maxAx, 2) + "," + String(maxAz, 2);
+    Serial.println(data);
+    float ax_g = az / 16384.0;
+    float az_g = ax / 16384.0;
 
-    float ax_g = ax / 16384.0;
-    float az_g = az / 16384.0;
-
-    ax_g -= 1.0; // 중력 가속도 제거
+    az_g -= 1.0; // 중력 가속도 제거
 
     // 최대값 갱신
     if (abs(ax_g) > abs(maxAx)) maxAx = ax_g;
     if (abs(az_g) > abs(maxAz)) maxAz = az_g;
 
-    // 측정 시간(5초)이 지나면 결과 출력
-    if (millis() - measurementStartTime >= 5000) { // 5초 경과
+    // 측정 시간(3초)이 지나면 결과 출력
+    if (millis() - measurementStartTime >= 3000) { // 3초 경과
       measuring = false; // 측정 종료
       String data = String(maxAx, 2) + "," + String(maxAz, 2);
       BTSerial.println(data);
